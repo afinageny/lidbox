@@ -66,7 +66,7 @@ function prettyMessage(raw: string): string {
   if (parser) return parser[1].replace(/\s+in file\s+.*/i, "").trim();
   msg = msg.replace(/\s+in file\s+.*/i, "").trim();
   msg = msg.replace(/\s*Can't parse file\s+'[^']+'\s*!/i, "").trim();
-  return msg || "Ошибка OpenSCAD";
+  return msg || "OpenSCAD error";
 }
 
 function relativeWorkPath(file: string): string {

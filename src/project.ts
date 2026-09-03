@@ -114,10 +114,10 @@ export function unzipProject(bytes: Uint8Array): Record<string, Uint8Array> {
     const path = raw.replace(/\\/g, "/");
     if (!path || path.endsWith("/") || path.split("/").includes("..")) continue;
     total += data.length;
-    if (total > MAX_UNCOMPRESSED) throw new Error("Архив слишком большой");
+    if (total > MAX_UNCOMPRESSED) throw new Error("Archive is too large");
     files[path] = data;
   }
-  if (!Object.keys(files).length) throw new Error("Архив пуст");
+  if (!Object.keys(files).length) throw new Error("Archive is empty");
   return stripCommonRoot(files);
 }
 
@@ -127,14 +127,14 @@ export function pickMain(files: Record<string, Uint8Array>, requested?: string |
     const hit = scads.find(
       (p) => p === requested || p.endsWith(`/${requested}`) || p.toLowerCase() === requested.toLowerCase()
     );
-    if (!hit) throw new Error(`В архиве нет ${requested}`);
+    if (!hit) throw new Error(`Archive has no ${requested}`);
     return hit;
   }
   const preferred =
     scads.find((p) => /(^|\/)main\.scad$/i.test(p)) ??
     scads.find((p) => !p.includes("/")) ??
     scads[0];
-  if (!preferred) throw new Error("В данных нет .scad файла");
+  if (!preferred) throw new Error("No .scad file in the data");
   return preferred;
 }
 

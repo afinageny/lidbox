@@ -34,7 +34,7 @@ function resolveScadFile(): string {
     if (named) return named.file;
     const abs = path.isAbsolute(spec) ? spec : path.resolve(process.cwd(), spec);
     if (fs.existsSync(abs) && fs.statSync(abs).isFile()) return path.normalize(abs);
-    const names = listed.map((item) => item.name).join(", ") || "(пусто)";
+    const names = listed.map((item) => item.name).join(", ") || "(empty)";
     throw new Error(
       `OpenSCAD file not found: ${spec}\nFiles in openscad/: ${names}\nPass a name from openscad/, --scad <file>, or SCAD=`
     );

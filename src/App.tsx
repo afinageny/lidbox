@@ -51,7 +51,7 @@ function readBoot() {
   } else if (fromUrl.error || !Object.keys(fromUrl.files).length) {
     const model = bootModel();
     project = defaultProject(model.source, model.name);
-    error = fromUrl.error ?? "Не удалось прочитать параметр URL";
+    error = fromUrl.error ?? "Could not read URL parameter";
   }
   const files = project!.files;
   const main = project!.main;
@@ -73,7 +73,7 @@ export function App() {
   const [vars, setVars] = useState<Vars>(boot.project.vars ?? {});
   const [stl, setStl] = useState<ArrayBuffer | null>(null);
   const [parts, setParts] = useState<ArrayBuffer[] | null>(null);
-  const [status, setStatus] = useState(boot.error ?? "Загрузка WASM…");
+  const [status, setStatus] = useState(boot.error ?? "Loading WASM…");
   const [err, setErr] = useState(Boolean(boot.error));
   const [busy, setBusy] = useState(false);
   const [diags, setDiags] = useState<Diag[]>([]);
@@ -92,13 +92,16 @@ export function App() {
   const mainSource = fileText(files, main);
   const paths = useMemo(() => scadPaths(files), [files]);
   const params = useMemo(() => parseCustomizer(mainSource), [mainSource]);
-  const grouped = useMemo(() => {
-    const g: Record<string, Param[]> = {};
-    for (const p of params) (g[p.group] ??= []).push(p);
-    return g;
-  }, [params]);
   const title = (main.split("/").pop() ?? "OpenSCAD").replace(/\.scad$/i, "");
   const part = String(vars.part ?? params.find((p) => p.name === "part")?.initial ?? "assembly");
+  const grouped = useMemo(() => {
+    const g: Record<string, Param[]> = {};
+    for (const p of params) {
+      if (p.name === "lid_open" && part !== "assembly") continue;
+      (g[p.group] ??= []).push(p);
+    }
+    return g;
+  }, [params, part]);
   const previewVars = useMemo(() => {
     const next: Vars = {};
     for (const p of params) next[p.name] = p.initial;
@@ -115,7 +118,7 @@ export function App() {
         job.current = { id, preview };
         setBusy(true);
         setErr(false);
-        setStatus(preview ? "Превью…" : "Рендер…");
+        setStatus(preview ? "Preview…" : "Render…");
         const worker = new Worker(`${import.meta.env.BASE_URL}openscad-worker.js?v=4`, {
           type: "module",
         });
@@ -134,20 +137,20 @@ export function App() {
             );
             setDiags(parsed);
             const first = parsed[0];
-            setStatus(first ? formatDiag(first) : ev.data.error || "Ошибка OpenSCAD");
+            setStatus(first ? formatDiag(first) : ev.data.error || "OpenSCAD error");
             return;
           }
           setStl(ev.data.stl);
           setParts(ev.data.parts ?? null);
           setErr(false);
           setDiags([]);
-          setStatus(preview ? "Превью готово" : "Рендер готов");
+          setStatus(preview ? "Preview ready" : "Render ready");
         };
         worker.onerror = (e) => {
           if (job.current.id !== id) return;
           setBusy(false);
           setErr(true);
-          setStatus(e.message || "Ошибка worker");
+          setStatus(e.message || "Worker error");
         };
         worker.postMessage({ id, files, main, vars: { ...vars, part }, preview });
       };
@@ -253,7 +256,7 @@ export function App() {
     setVars({});
     setDiags([]);
     setErr(false);
-    setStatus("Модель по умолчанию");
+    setStatus("Default model");
     clearShareUrl();
   }
 
@@ -276,17 +279,17 @@ export function App() {
     const url = shareUrl(files, main, vars);
     if (url.length > MAX_SHARE_URL) {
       setErr(true);
-      setStatus("Проект слишком большой для URL");
+      setStatus("Project is too large for a URL");
       return;
     }
     history.replaceState(null, "", url);
     try {
       await navigator.clipboard.writeText(url);
       setErr(false);
-      setStatus("Ссылка скопирована");
+      setStatus("Link copied");
     } catch {
       setErr(false);
-      setStatus("Ссылка обновлена в адресной строке");
+      setStatus("Link updated in the address bar");
     }
   }
 
@@ -298,9 +301,9 @@ export function App() {
           <select
             value={main in scadCatalog ? main : ""}
             onChange={(e) => loadCatalogModel(e.target.value)}
-            title="Файл из openscad/"
+            title="File from openscad/"
           >
-            {main in scadCatalog ? null : <option value="">свой файл</option>}
+            {main in scadCatalog ? null : <option value="">custom file</option>}
             {catalogNames().map((name) => (
               <option key={name} value={name}>
                 {name}
@@ -312,7 +315,7 @@ export function App() {
           <select
             value={openPath}
             onChange={(e) => setOpenPath(e.target.value)}
-            title="Файл в редакторе"
+            title="File in the editor"
           >
             {paths.map((p) => (
               <option key={p} value={p}>
@@ -322,19 +325,19 @@ export function App() {
           </select>
         ) : null}
         <button className="primary" disabled={busy} onClick={() => run(true, true)}>
-          Превью
+          Preview
         </button>
         <button disabled={busy} onClick={() => run(false, true)}>
-          Рендер
+          Render
         </button>
         <button disabled={!stl} onClick={exportStl}>
           STL
         </button>
         <button disabled={busy} onClick={copyShareLink}>
-          Ссылка
+          Link
         </button>
-        <button disabled={busy} onClick={resetToDefault} title="Убрать модель из адреса, показать встроенную">
-          Сброс
+        <button disabled={busy} onClick={resetToDefault} title="Clear the model from the URL and show the built-in one">
+          Reset
         </button>
         <span className={`status ${err ? "err" : "ok"}`}>{status}</span>
       </header>
@@ -401,7 +404,7 @@ export function App() {
           ))}
           {sheet && !grouped.Windows ? (
             <section>
-              <h2>Стёкла</h2>
+              <h2>Sheets</h2>
               <SheetCutInfo sheet={sheet} />
             </section>
           ) : null}
@@ -434,11 +437,11 @@ function SheetCutInfo({
 }) {
   return (
     <div className="sheet-cut">
-      <div className="sheet-cut-count">окна {sheet.count} шт.</div>
+      <div className="sheet-cut-count">{sheet.count} window{sheet.count === 1 ? "" : "s"}</div>
       <div className="sheet-cut-size">
-        {formatMm(sheet.width)} × {formatMm(sheet.depth)} × {formatMm(sheet.thickness)} мм
+        {formatMm(sheet.width)} × {formatMm(sheet.depth)} × {formatMm(sheet.thickness)} mm
       </div>
-      <div className="sheet-cut-hint">ширина × глубина × толщина, в карман окна</div>
+      <div className="sheet-cut-hint">width × depth × thickness, into the window pocket</div>
     </div>
   );
 }

@@ -6,37 +6,37 @@ part = "assembly"; // [assembly, drillTemplate, waterCover, hoseFitting, drainPl
 show_threads = true;
 
 /* [Holes] */
-// Количество отверстий
+// Hole count
 hole_count = 2; // [1:8]
-// Диаметр, мм
+// Hole diameter, mm
 hole_diameter = 78; // [20:0.5:150]
-// Поле вокруг отверстия, мм
+// Rim, mm
 rim = 10; // [2:40]
-// Шаг между центрами, мм
+// Hole offset, mm
 hole_offset = 71; // [20:0.5:200]
 
 /* [Plate] */
-// Отступ до края пластины, мм
+// Margin, mm
 margin = 20; // [5:80]
-// Толщина пластины, мм
+// Thickness, mm
 thickness = 10; // [4:30]
-// Скругление углов пластины, мм
+// Corner fillet, mm
 corner_fillet = 6; // [0:20]
-// Скругление верхнего ребра, мм
+// Edge fillet, mm
 edge_fillet = 2; // [0:8]
-// Отступ крепежа от края, мм
+// Corner inset, mm
 corner_inset = 10; // [4:40]
-// Диаметр крепежного отверстия, мм
+// Corner hole diameter, mm
 corner_hole_d = 5; // [2:0.5:12]
 
 /* [Cover] */
-// Высота стенок, мм
+// Wall height, mm
 wall_height = 50; // [10:120]
-// Толщина стенок, мм
+// Wall thickness, mm
 wall_thickness = 3; // [1:0.5:10]
-// Длина резьбы G 1/2, мм
+// Thread boss length, mm (G 1/2)
 thread_boss_length = 12; // [6:30]
-// На сколько отверстия в крышке больше Diameter, мм
+// Lid hole oversize, mm
 lid_hole_oversize = 10; // [0:40]
 fitting_barb_22 = 22; // [10:40]
 fitting_barb_19 = 19; // [10:40]

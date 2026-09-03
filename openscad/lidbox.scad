@@ -1,50 +1,50 @@
 // Drillbox — sandwich lid: two mirrored trapezoids. Units: millimetres.
 
 /* [Show] */
-part = "print"; // [печатать:print, сборка:assembly, корпус:box, крышка-верх:lidSandwichTop, крышка-низ:lidSandwichBottom]
-// Открытость крышки, % (0 = задвинута)
+part = "print"; // [print:print, assembly:assembly, box:box, lid upper:lidSandwichTop, lid lower:lidSandwichBottom]
+// Lid open, % (0 = closed)
 lid_open = 0; // [0:1:100]
 
 /* [Box] */
-// Ширина (направление сдвига), мм
+// Width (slide direction), mm
 width = 80; // [20:1:200]
-// Глубина, мм
+// Depth, mm
 depth = 50; // [20:1:200]
-// Высота, мм
+// Height, mm
 height = 40; // [15:1:200]
-// Толщина стенок, мм
+// Thickness, mm
 thickness = 3; // [1.5:0.5:12]
-// Радиус скругления снаружи, мм
+// Fillet radius, mm
 fillet_radius = 1.5; // [0:0.1:6]
 
 /* [Lid] */
-// Толщина каждой половины, мм (0 = половина толщины стенок)
+// Lid thickness, mm (0 = half wall thickness)
 lid_thickness = 0; // [0:0.5:8]
-// Угол трапеции, °
+// Dovetail angle, °
 dovetail_angle = 20; // [8:1:35]
-// Зазор крышки, мм
+// Clearance, mm
 clearance = 0.1; // [0.1:0.05:0.8]
-// Диаметр чопиков, мм
+// Peg diameter, mm
 peg_diameter = 1.6; // [1.2:0.1:2.4]
 
 /* [Windows] */
-// Окон по ширине (X)
+// Window count X
 window_count_x = 2; // [1:6]
-// Окон по глубине (Y)
+// Window count Y
 window_count_y = 1; // [1:6]
-// Ширина рамки, мм
+// Frame width, mm
 frame_width = 5; // [2:1:15]
-// Полка под лист, мм
+// Window lip, mm
 window_lip = 2; // [1:0.5:5]
-// Толщина листа, мм
+// Sheet thickness, mm
 sheet_thickness = 1; // [0.3:0.1:1]
 
 /* [Colors] */
-// Корпус
+// Color box
 color_box = "#d97757";
-// Крышка верх
+// Color lid upper
 color_lid_upper = "#6bcb77";
-// Крышка низ
+// Color lid lower
 color_lid_lower = "#2f6f4e";
 
 $fa = $preview ? 8 : 5;
