@@ -27,6 +27,28 @@ type Job = {
   preview: boolean;
 };
 
+type Theme = "light" | "dark";
+const THEME_KEY = "drillbox-theme";
+
+function readTheme(): Theme {
+  try {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === "light" || stored === "dark") return stored;
+  } catch {
+    /* ignore */
+  }
+  return "light";
+}
+
+function applyTheme(theme: Theme) {
+  document.documentElement.dataset.theme = theme;
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+  } catch {
+    /* ignore */
+  }
+}
+
 function catalogNames() {
   return Object.keys(scadCatalog).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
 }
@@ -77,6 +99,7 @@ export function App() {
   const [err, setErr] = useState(Boolean(boot.error));
   const [busy, setBusy] = useState(false);
   const [diags, setDiags] = useState<Diag[]>([]);
+  const [theme, setTheme] = useState<Theme>(readTheme);
   const job = useRef<Job & { worker?: Worker }>({ id: 0, preview: true });
   const debounce = useRef<number>(0);
   const urlDebounce = useRef<number>(0);
@@ -212,6 +235,10 @@ export function App() {
   }, [files, main, vars]);
 
   useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
+  useEffect(() => {
     run(true, false);
     return () => {
       window.clearTimeout(debounce.current);
@@ -339,6 +366,13 @@ export function App() {
         <button disabled={busy} onClick={resetToDefault} title="Clear the model from the URL and show the built-in one">
           Reset
         </button>
+        <button
+          type="button"
+          onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
+          title={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
+        >
+          {theme === "light" ? "Dark" : "Light"}
+        </button>
         <span className={`status ${err ? "err" : "ok"}`}>{status}</span>
       </header>
       <div className="work">
@@ -346,7 +380,7 @@ export function App() {
           <div className="editor-pane">
             <Editor
               language="cpp"
-              theme="vs-dark"
+              theme={theme === "light" ? "light" : "vs-dark"}
               value={source}
               onMount={(ed, monaco) => {
                 editorRef.current = ed;
@@ -385,7 +419,7 @@ export function App() {
           ) : null}
         </div>
         <div className="stage">
-          <Viewer stl={stl} parts={parts} part={part} vars={previewVars} />
+          <Viewer stl={stl} parts={parts} part={part} vars={previewVars} theme={theme} />
         </div>
         <aside className="params">
           {Object.entries(grouped).map(([group, list]) => (

@@ -36,16 +36,39 @@ function colorFor(part: string, index: number, count: number, vars: Vars = {}) {
   return c.box;
 }
 
+const SCENE = {
+  dark: { bg: 0x1b1e24, grid: 0x3d4450, gridMinor: 0x2a3038 },
+  light: { bg: 0xe8eaee, grid: 0xb8bfc9, gridMinor: 0xd0d5dc },
+};
+
+function applySceneTheme(
+  rec: { scene: THREE.Scene; grid?: THREE.GridHelper },
+  theme: "light" | "dark"
+) {
+  const c = SCENE[theme];
+  rec.scene.background = new THREE.Color(c.bg);
+  if (!rec.grid) return;
+  const mats = rec.grid.material;
+  if (Array.isArray(mats)) {
+    mats[0]?.color.setHex(c.grid);
+    mats[1]?.color.setHex(c.gridMinor);
+  } else {
+    mats.color.setHex(c.grid);
+  }
+}
+
 export function Viewer({
   stl,
   parts,
   part = "assembly",
   vars,
+  theme = "light",
 }: {
   stl: ArrayBuffer | null;
   parts?: ArrayBuffer[] | null;
   part?: string;
   vars?: Vars;
+  theme?: "light" | "dark";
 }) {
   const host = useRef<HTMLDivElement>(null);
   const ctx = useRef<{
@@ -57,12 +80,15 @@ export function Viewer({
     grid?: THREE.GridHelper;
     frame: number;
   } | null>(null);
+  const themeRef = useRef(theme);
+  themeRef.current = theme;
 
   useEffect(() => {
     const el = host.current;
     if (!el) return;
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1b1e24);
+    const look = SCENE[theme];
+    scene.background = new THREE.Color(look.bg);
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 5000);
     camera.position.set(180, 140, 220);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -75,7 +101,7 @@ export function Viewer({
     key.position.set(80, 160, 120);
     scene.add(key);
     scene.add(new THREE.HemisphereLight(0x9ec9ff, 0x334155, 0.35));
-    const grid = new THREE.GridHelper(400, 20, 0x3d4450, 0x2a3038);
+    const grid = new THREE.GridHelper(400, 20, look.grid, look.gridMinor);
     scene.add(grid);
 
     const tick = () => {
@@ -105,6 +131,11 @@ export function Viewer({
       ctx.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    const rec = ctx.current;
+    if (rec) applySceneTheme(rec, theme);
+  }, [theme]);
 
   useEffect(() => {
     const rec = ctx.current;
@@ -153,8 +184,9 @@ export function Viewer({
       if (Array.isArray(gmat)) gmat.forEach((m) => m.dispose());
       else gmat.dispose();
     }
+    const look = SCENE[themeRef.current];
     const gridSize = Math.ceil((span * 2.4) / 20) * 20;
-    rec.grid = new THREE.GridHelper(gridSize, 20, 0x3d4450, 0x2a3038);
+    rec.grid = new THREE.GridHelper(gridSize, 20, look.grid, look.gridMinor);
     rec.scene.add(rec.grid);
     rec.camera.position.set(span * 1.4, height * 0.55 + span * 0.7, span * 1.5);
     rec.controls.target.set(0, height / 2, 0);
